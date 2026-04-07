@@ -41,11 +41,15 @@ const selfHostedAuth = PieceAuth.CustomAuth({
         body: { username: auth.username, password: auth.password },
       });
       return { valid: true };
-    } catch {
+    } catch (e: unknown) {
+      const status = (e as { status?: number }).status;
+      const responseBody = (e as { responseBody?: unknown }).responseBody;
+      const detail = status
+        ? `HTTP ${status}: ${JSON.stringify(responseBody ?? '')}`
+        : (e instanceof Error ? e.message : String(e));
       return {
         valid: false,
-        error:
-          'Connection failed. Check that the URL is reachable and your username/password are correct.',
+        error: `Connection failed (${detail}). Check that the URL is reachable and your username/password are correct.`,
       };
     }
   },
